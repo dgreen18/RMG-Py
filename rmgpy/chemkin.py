@@ -1027,9 +1027,7 @@ def readThermoBlock(f, speciesDict):
                     try:
                         formulaDict[label] = formula
                         speciesDict[label].thermo = thermo
-                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment','') 
-                        if comments:
-                            speciesDict[label].thermo.comment += '\n{0}'.format(comments)
+                        speciesDict[label].thermo.comment = getattr(speciesDict[label].thermo,'comment') + comments.strip()
                         comments = ''
                     except KeyError:
                         if label.upper() in ['AR', 'N2', 'HE', 'NE']:

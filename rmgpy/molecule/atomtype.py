@@ -399,6 +399,8 @@ def getAtomType(atom, bonds):
         atomType = 'Cl'
     elif atom.symbol == 'Ar':
         atomType = 'Ar'
+    elif atom.symbol == 'N' or or atom.symbol == 'He' or atom.symbol == 'Ne':
+        return None
 
     # Raise exception if we could not identify the proper atom type
     if atomType == '':

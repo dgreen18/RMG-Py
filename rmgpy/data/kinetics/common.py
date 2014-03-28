@@ -223,7 +223,6 @@ def saveEntry(f, entry):
 
     f.write(')\n\n')
 
-
 def filterReactions(reactants, products, reactionList):
     """
     Remove any reactions from the given `reactionList` whose reactants do

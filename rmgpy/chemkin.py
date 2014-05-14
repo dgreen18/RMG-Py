@@ -218,6 +218,44 @@ def readKineticsEntry(entry, speciesDict, Aunits, Eunits):
             reaction.kinetics = chebyshev
         elif 'pressure-dependent arrhenius' in kinetics:
             pdepArrhenius = kinetics['pressure-dependent arrhenius']
+            reaction.kinetics = _kinetics.PDepArrhenius(
+                pressures = ([P for P, arrh in pdepArrhenius],"atm"),
+                arrhenius = [arrh for P, arrh in pdepArrhenius],
+            )
+        elif 'troe' in kinetics:
+            troe = kinetics['troe']
+            troe.arrheniusHigh = kinetics['arrhenius high']
+            troe.arrheniusLow = kinetics['arrhenius low']
+            troe.efficiencies = kinetics['efficiencies']
+            reaction.kinetics = troe
+        elif 'arrhenius low' in kinetics:
+            reaction.kinetics = _kinetics.Lindemann(
+                arrheniusHigh=kinetics['arrhenius high'],
+                arrheniusLow=kinetics['arrhenius low'])
+            reaction.kinetics.efficiencies = kinetics['efficiencies']
+        elif 'third body' in kinetics:
+            # what we had read first (and assumed High) is in fact the
+            # Low pressure rate.
+            reaction.kinetics = _kinetics.ThirdBody(
+                arrheniusLow=kinetics['arrhenius high'])
+            reaction.kinetics.efficiencies = kinetics['efficiencies']
+        elif reaction.duplicate:
+            reaction.kinetics = kinetics['arrhenius high']
+        elif 'explicit reverse' in kinetics:
+            reaction.kinetics = kinetics['arrhenius high']
+            reaction.kinetics.comment = (
+                "Chemkin file stated explicit reverse rate: {0}"
+                ).format(kinetics['explicit reverse'])
+        else:
+            raise ChemkinError('Unable to determine pressure-dependent kinetics for reaction {0}.'.format(reaction))
+
+    return reaction
+
+
+def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
+    """
+    Parse the first line of of a Chemkin reaction entry.
+    """
             # Check for duplicates and combine them to MultiArrhenius objects
             duplicatesToRemove = []
             duplicatesToAdd = []
@@ -377,7 +415,6 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
         raise ChemkinError('Invalid number of reactant species for reaction {0}.'.format(reaction))
     
     key = 'arrhenius low' if thirdBody else 'arrhenius high'
-    
     kinetics = {
         key: _kinetics.Arrhenius(
             A = (A,kunits,AuncertaintyType,dA),

@@ -1061,12 +1061,12 @@ def readThermoBlock(f, speciesDict):
             else:
                 logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
         else:
-            logging.info("Ignoring short line: {0!r}".format(line))
+            logging.warning("Ignoring short line: {0!r}".format(line))
             line = f.readline()
             continue
 
         if line[79] not in ['1', '2', '3', '4']:
-            logging.info("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
+            logging.warning("Ignoring line without 1,2,3 or 4 in 80th column: {0!r}".format(line))
             line = f.readline()
             continue
 
@@ -1096,7 +1096,7 @@ def readThermoBlock(f, speciesDict):
                 comments = ''
             except KeyError:
                 if label.upper() in ['AR', 'N2', 'HE', 'NE']:
-                    logging.info('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
+                    logging.warning('Skipping species"{0}" while reading thermodynamics entry.'.format(label))
                 else:
                     logging.warning('Skipping unexpected species "{0}" while reading thermodynamics entry.'.format(label))
             thermoBlock = ''

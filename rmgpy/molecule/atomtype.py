@@ -30,7 +30,7 @@
 """
 This module defines the atom types that are available for representing
 molecular functional groups and substructure patterns. Each available atom type
-is defined as an instance of the :class:`AtomType` class. The atom types 
+is defined as an instance of the :class:`AtomType` class. The atom types
 themselves are available in the ``atomTypes`` module-level variable, or as
 the return value from the :meth:`getAtomType()` method.
 
@@ -166,7 +166,7 @@ with a capital letter [A-Z]
 atomTypes = {}
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'R!H',
-    'Val4','Val5','Val6','Val7',    
+    'Val4','Val5','Val6','Val7',
     'H','He',
     'C','Cs','Cd','Cdd','Ct','CO','Cb','Cbf','CS',
     'N','N1d','N3s','N3d','N3t','N3b','N5s','N5d','N5dd','N5t','N5b',
@@ -329,9 +329,9 @@ def getAtomType(atom, bonds):
 
     cython.declare(atomType=str)
     cython.declare(double=cython.int, double0=cython.int, triple=cython.int, benzene=cython.int)
-    
+
     atomType = ''
-    
+
     # Count numbers of each higher-order bond type
     single = 0; double = 0; doubleO = 0; triple = 0; benzene = 0
     for atom2, bond12 in bonds.iteritems():
@@ -399,7 +399,7 @@ def getAtomType(atom, bonds):
         atomType = 'Cl'
     elif atom.symbol == 'Ar':
         atomType = 'Ar'
-    elif atom.symbol == 'N' or or atom.symbol == 'He' or atom.symbol == 'Ne':
+    elif atom.symbol == 'N' or atom.symbol == 'He' or atom.symbol == 'Ne':
         return None
 
     # Raise exception if we could not identify the proper atom type

@@ -3,7 +3,7 @@
 """
 This script enables the conversion of Chemkin files
 into RMG-Py style thermo library file.
-Simply pass the paths of the Chemkin files on the 
+Simply pass the paths of the Chemkin files on the
 command-line, e.g.
 
     $ python convertThermo.py --species /path/to/chem1.inp  --thermo /path/to/therm.dat
@@ -58,7 +58,7 @@ sys.path.insert(0, databaseProjectDirectory)
 class MagicSpeciesDict(dict):
     """
     A dictionary that always has the species you're looking for!
-    
+
     (If they key isn't there when you ask, it adds a blank Species() object and returns that)
     """
 
@@ -75,7 +75,7 @@ def convertFormula(formulaDict):
     """
     Given a formula in dict form {'c':2, 'h':6, 'o':0}
     return a canonical formula string "C2H6"
-    
+
     For comparison reasons, this must be the same algorithm as used in
     rmgpy.molecule.Molecule class.
     """
@@ -174,7 +174,7 @@ def parseCommandLineArguments():
     group.add_argument('-d', '--debug', action='store_true', help='print debug information')
 
     args = parser.parse_args()
-    
+
     if args.reactions is None:
         logging.warning("Using thermo file for reactions, as no reactions file specified.")
         args.reactions = args.thermo
@@ -203,7 +203,7 @@ def parseCommandLineArguments():
 def reactionMatchesFormulas(reaction, reactantFormulas):
     """
     Does the reaction match the reactantFormulas, in either direction?
-    
+
     The reaction must contain real species with identified molecules.
     reactantFormulas is an iterable of Strings like ('CH3','H').
     Returns 'forward', 'backward', or False.
@@ -527,7 +527,7 @@ class ModelMatcher():
     def initializeRMG(self, args):
         """
         Create an RMG object, store it in self.rmg_object, and set it up.
-        
+
         This loads the database, makes some settings, etc.
         `args` should have attributes `output_directory` and `scratch_directory`.
         Also needs a global variable databseDirectory
@@ -563,6 +563,7 @@ class ModelMatcher():
         if not args.noqm:
             rmgpy.rmg.input.quantumMechanics(
                 software='mopac',
+                method='pm3',
                 fileStore=os.path.join(os.path.normpath(os.path.join(rmgpy.getPath(), '..')), 'QMfiles'),
                 scratchDirectory=None,  # not currently used
                 onlyCyclics=True,
@@ -571,7 +572,7 @@ class ModelMatcher():
 
         """
         An earlier version had the QMfiles path in the wrong place, so we see if there
-        are files there and move them if so. This block should be removed once it has been 
+        are files there and move them if so. This block should be removed once it has been
         run once on all the computers used to run the old version of the importer...
         """
         oldQMpath = os.path.join(rmgpy.getPath(), 'QMfiles')
@@ -592,7 +593,7 @@ class ModelMatcher():
         logging.info("Loaded database.")
 
         self.thermo_libraries_to_check.extend(rmg.database.thermo.libraryOrder) # add the RMG libraries
-        
+
         # Should probably look elsewhere, but this is where they tend to be for now...
         directory = os.path.abspath(os.path.join(os.path.split(os.path.abspath(args.thermo))[0], '..'))
         # if that's some subfolder of RMG-models, move up to RMG-models level
@@ -639,7 +640,7 @@ class ModelMatcher():
     def speciesMatch(self, rmg_species, chemkin_species):
         """
         Return True if the species might match, else False.
-        
+
         i.e. if chemkin_species has been identified, it must be the rmg_species,
         but if it hasn't it must at least have the same formula.
         If it matches based only on formula, the match it is added to the self.suggestedMatches dictionary.
@@ -663,9 +664,9 @@ class ModelMatcher():
     def reactionsMatch(self, rmg_reaction, chemkin_reaction, eitherDirection=True):
         """
         This is based on the rmg.reaction.Reaction.isIsomorphic method
- 
+
         Return ``True`` if rmg_reaction is the same as the chemkin_reaction reaction,
-        or ``False`` if they are different. 
+        or ``False`` if they are different.
         If `eitherDirection=False` then the directions must match.
         """
         speciesMatch = self.speciesMatch
@@ -845,10 +846,10 @@ class ModelMatcher():
 
     def speciesReactAccordingToChemkin(self, rmgSpecies1, rmgSpecies2):
         """
-        Return true if the two species have been identified and are on 
+        Return true if the two species have been identified and are on
         the same side of at least one chemkin reaction. i.e. we know that
         according to the chemkin file, they react with each other.
-        
+
         If rmgSpecies1 and rmgSpecies2 are the same thing, it must react
         with itself to return true. (eg. A + A -> products)
         """
@@ -1015,7 +1016,7 @@ class ModelMatcher():
 
     def clearTentativeMatch(self, chemkinLabel, rmgSpecies):
         """
-        Clear all tentative matches from that have either that label or species, 
+        Clear all tentative matches from that have either that label or species,
         eg. because you've confirmed a match.
         """
         for match in self.tentativeMatches:
@@ -1025,7 +1026,7 @@ class ModelMatcher():
     def setTentativeMatch(self, chemkinLabel, rmgSpecies, username=None):
         """
         Store a tentative match, waiting for user confirmation.
-        
+
         If it conflicts with an existing tentative match, it instead
         removes that one, and returns false. If you want to add
         the new one, call it again.
@@ -1401,7 +1402,7 @@ class ModelMatcher():
     def pruneVoting(self):
         """
         Return a voting matrix with only significant (unique) votes.
-        
+
         If the same reaction is voting for several species, remove it.
         If a match has a large enthalpy discrepancy, remove it.
         """
@@ -1482,7 +1483,7 @@ class ModelMatcher():
 
     def constrainReactionFamilies(self):
         """
-        Add restraints to the reaction families so they do not produce 
+        Add restraints to the reaction families so they do not produce
         edge species that cannot possibly be in the chemkin file.
         """
         import rmgpy.data.rmg
@@ -1502,7 +1503,7 @@ class ModelMatcher():
         """
         Enlarges the rmg reaction model, but only reacts the new species with
         species it is predicted to react with in the chemkin reaction file
-        
+
         Follows a similar procedure to rmg.CoreEdgeReactionModel.enlarge
         """
         rm = self.rmg_object.reactionModel
@@ -1646,7 +1647,7 @@ class ModelMatcher():
         self.loadSpecies(species_file)
         self.loadThermo(thermo_file)
         self.loadKnownSpecies(known_species_file)
-        
+
         for species in self.speciesList:
             if species.label not in self.thermoDict or self.thermoDict[species.label] is None:
                 message="Species {sp} in the species file {spf} does not have a valid thermo entry in the thermo file {th}".format(sp=species.label, spf=species_file, th=thermo_file)
@@ -1931,7 +1932,7 @@ recommended = False
             name = name[(name.index('RMG-models')+11):]
         except ValueError:
             pass
-        
+
         output = [self.html_head() , """
 <script>
 function alsoUpdate(json) {
@@ -1957,7 +1958,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
 <li><a href="thermo.py">Download thermo library.</a></li>
 </ul>
         """]
-        
+
         output.append("""Your name: <a href="setname.html">{0}</a><br/>""".format(self.getUsername()))
         output.append("""Model: <a href="chemkin.inp">{0}</a><br/>""".format(location))
         output.append(self.html_tail)
@@ -1984,7 +1985,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         output.append('</table>')
         output.append(self.html_tail)
         return '\n'.join(output)
-        
+
     @cherrypy.expose
     def identified_html(self):
         img = self._img
@@ -1998,7 +1999,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                                 ) for n, lab in enumerate(self.identified_labels)
                             ]) +
                 '</tr></table>' + self.html_tail)
-        
+
     @cherrypy.expose
     def thermomatches_html(self):
         img = self._img
@@ -2122,7 +2123,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         """The raw chemkin input file"""
         return serve_file(os.path.abspath(self.args.reactions or self.args.species),
                               content_type='text/plain')
-    
+
 
     @cherrypy.expose
     def unconfirmedspecies_html(self):
@@ -2311,14 +2312,14 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
             chemkinReactions = self.chemkinReactionsDict[chemkinLabel]
 
             myVotingChemkinReactions = dict()
-            
+
             sortedMatchingSpeciesList = sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])+0.001*abs(self.getEnthalpyDiscrepancy(chemkinLabel, species)))
-            
+
             for s in speciesWaitingToProcess:
                 if s in sortedMatchingSpeciesList:
                     # structure already matched, so remove from possible matches
                     sortedMatchingSpeciesList.remove(s)
-            
+
             for chemkinReaction in chemkinReactions:
                 this_reaction_votes_for = dict()
                 myVotingChemkinReactions[chemkinReaction] = this_reaction_votes_for
@@ -2365,12 +2366,12 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 except KeyError:
                     output.append("</td>")
             output.append("</tr>")
-                
+
             output.append("<tr><td>{num} Reactions</td>".format(num=len(chemkinReactions)))
             for matchingSpecies in sortedMatchingSpeciesList:
                 output.append("<td>{n}</td>".format(n=len(possibleMatches[matchingSpecies])))
             output.append("</tr>")
-                
+
             for chemkinReaction in sorted(chemkinReactions, key=lambda rxn:-len(myVotingChemkinReactions[rxn])):
                 reaction_string = []
                 for token in str(chemkinReaction).split():
@@ -2384,7 +2385,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                         token = "<a href='#{0}' class='species'>{0}</a>".format(token)
                     reaction_string.append(token)
                 reaction_string = ' '.join(reaction_string)
-                
+
                 output.append("<tr><td style='white-space: nowrap;'>{rxn!s}</td>".format(rxn=reaction_string))
                 this_reaction_votes_for = myVotingChemkinReactions[chemkinReaction]
                 for matchingSpecies in sortedMatchingSpeciesList :
@@ -2429,7 +2430,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
                 continue
             possibleMatches = votes[chemkinLabel]
             output.append("<h2>{0} matches {1} RMG species</h2>".format(chemkinLabel, len(possibleMatches)))
-            
+
             for matchingSpecies in sorted(possibleMatches.iterkeys(), key=lambda species:-len(possibleMatches[species])) :
                 if matchingSpecies in speciesWaitingToProcess:
                     output.append("{img} which has just been identified but not yet processed.<br>".format(img=img(matchingSpecies)))

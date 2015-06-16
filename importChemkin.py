@@ -1201,14 +1201,95 @@ class ModelMatcher():
         self.blockedMatches[chemkinLabel][rmgSpecies] = username
 
         self.votes[chemkinLabel].pop(rmgSpecies, None)
-
+    
+    def writeToPrime(self, rmgSpecies):
+        from lxml import etree
+    	rmgMol = rmgSpecies.molecule[0]
+#     	import ipdb; ipdb.set_trace()
+    	xmlns="url"
+    	xsi="url.xsi"
+    	primeID="[insert primeID]"
+    	schemaLocation="url.xsd"
+    	NSMAP = {None: xmlns, 'xsi': xsi}
+    	root = etree.Element('{' + xmlns + '}chemicalSpecies', nsmap=NSMAP)
+    	#root.attrib["{" + xmlns + "}xsi"] = xsi
+    	root.attrib["{" + xsi + "}schemaLocation"] = schemaLocation
+    	root.attrib["primeID"] = primeID
+    	child1=etree.SubElement(root,'copyright')
+    	child1.text="[Richard West is awesome 2015]"
+    	bibliography="[insert bibliography number]"
+    	copyrighted="true"
+    	source="Importer"
+    	child2 = etree.SubElement(root, 'content')
+    	child2.attrib["bibliography"] = bibliography
+    	child2.attrib["copyrighted"] = copyrighted
+    	child2.attrib["source"] = source
+    	child2.text="\nElements attributed to Richard West are part of a collection copyrighted by Richard West.\n"
+    	group="prime"
+    	type="formula"
+    	child3=etree.SubElement(root, 'preferredKey')
+    	child3.attrib["group"]=group
+    	child3.attrib["type"]=type
+    	child3.text=rmgMol.getFormula()
+    	child4=etree.SubElement(root, 'chemicalIdentifier')
+    	import urllib, urllib2
+    	url = "http://cactus.nci.nih.gov/chemical/structure/{0}/cas".format(urllib.quote(rmgMol.toInChI()))
+    	f = urllib2.urlopen(url, timeout=5)
+    	cas = f.read()
+    	type="CASRegistryNumber"
+    	child4_1=etree.SubElement(child4, 'name')
+    	child4_1.attrib["source"] = source
+    	child4_1.attrib["type"]=type
+    	child4_1.text=cas
+    	type="formula"
+    	child4_2=etree.SubElement(child4, 'name')
+    	child4_2.attrib["source"] = source
+    	child4_2.attrib["type"]=type
+    	child4_2.text=rmgMol.getFormula()
+    	url = "http://cactus.nci.nih.gov/chemical/structure/{0}/iupac_name".format(urllib.quote(rmgMol.toInChI()))
+    	f = urllib2.urlopen(url, timeout=5)
+    	iupacname = f.read()
+    	type="IUPAC Name"
+    	child4_3=etree.SubElement(child4, 'name')
+    	child4_3.attrib["source"] = source
+    	child4_3.attrib["type"]=type
+    	child4_3.text=iupacname
+    	type="InChI"
+    	child4_4=etree.SubElement(child4, 'name')
+    	child4_4.attrib["type"]=type
+    	child4_4.text=rmgMol.toInChI()
+    	type="SMILES"
+    	child4_5=etree.SubElement(child4, 'name')
+    	child4_5.attrib["type"]=type
+    	child4_5.text=rmgMol.toSMILES()
+    	child5=etree.SubElement(root, 'chemicalComposition')
+    	atomdict={}
+    	for atom in rmgMol.atoms:
+    		symbol = atom.symbol
+    		if symbol in atomdict:
+    			atomdict[symbol]+=1
+    		else:
+    			atomdict[symbol]=1
+    	symlist=[]
+    	for k in atomdict.keys():
+    		symlist.append(k)
+    	symvariables={}
+    	for n in range(len(symlist)):
+    		symbol=symlist[n]
+    		symvariables["child5_{0}".format(n)]=etree.SubElement(child5, 'atom')
+    		symvariables["child5_{0}".format(n)].attrib["symbol"]=symbol
+    		symvariables["child5_{0}".format(n)].text=str(atomdict[symlist[n]])
+    	
+    	import ipdb; ipdb.set_trace()    	
+    	print etree.tostring(root, pretty_print=True)
+		
     def setMatch(self, chemkinLabel, rmgSpecies):
         """Store a match, once you've identified it"""
         self.clearTentativeMatch(chemkinLabel, rmgSpecies)
         self.identified_labels.append(chemkinLabel)
         self.identified_unprocessed_labels.append(chemkinLabel)
         self.clearThermoMatch(chemkinLabel)
-
+        self.writeToPrime(rmgSpecies)
         # For kinetics purposes, we convert the thermo to Wilhoit
         # This allows us to extrapolating H to 298 to find deltaH rxn
         # for ArrheniusEP kinetics,
